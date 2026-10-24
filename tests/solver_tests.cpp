@@ -1,8 +1,8 @@
 #include "fluxfp/solver.hpp"
 
 #include <cmath>
-#include <iostream>
 #include <numbers>
+#include <iostream>
 #include <stdexcept>
 
 void require(bool condition, const char* message) {
@@ -15,7 +15,7 @@ void test_initial_density() {
     fluxfp::Config config;
 
     const double actual = fluxfp::exact_density(config.initial_mean, 0.0, config);
-    const double expected = 1.0 / (config.initial_std * std::sqrt(2.0 * std::numbers::pi));
+    const double expected = 1.0 / (config.initial_std * std::sqrt(2.0 *std::numbers::pi));
     require(std::abs(actual - expected) < 1e-12, "Initial density test failed.");
 }
 
