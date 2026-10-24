@@ -51,3 +51,13 @@ add_test(
     NAME analytical_tests
     COMMAND solver_tests
 )
+
+add_executable(
+    fluxfp_dataset
+    src/dataset.cpp
+)
+
+target_link_libraries(
+    fluxfp_dataset
+    PRIVATE fluxfp_solver
+)
