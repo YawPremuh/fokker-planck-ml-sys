@@ -63,14 +63,59 @@ void test_invalid_parameters() {
     );
 }
 
+void test_numerical_initial_condition() {
+    fluxfp::Config config;
+    const auto result = fluxfp::solve(0.0, config, 400);
+    require(result.steps == 0, "Zero forecast time should require no time steps.");
+    double error = 0.0;
+
+    for (std::size_t i = 0; i < result.x.size(); ++i) {
+        const double expected = fluxfp::exact_density(result.x[i], 0.0, config);
+        error += std::abs(result.density[i] - expected) * result.dx;
+    }
+
+    require(error < 1e-10, "Numerical initial distribution is incorrect.");
+}
+
+void test_numerical_convergence() {
+    fluxfp::Config config;
+    const double time = 1.0;
+    double previous_error = 10.0;
+
+    for (int cells : {100, 200, 400, 800}) {
+        const auto result = fluxfp::solve(time, config, cells);
+
+        double total_probability = 0.0;
+        double error = 0.0;
+
+        for (std::size_t i = 0; i < result.x.size(); ++i) {
+            require(std::isfinite(result.density[i]), "Numerical density must be finite.");
+            require(result.density[i] >= 0.0, "Numerical density must not be negative.");
+
+            total_probability += result.density[i] * result.dx;
+            const double exact = fluxfp::exact_density(result.x[i], time, config);
+            error += std::abs(result.density[i] - exact) * result.dx;
+        }
+
+        require(std::abs(total_probability - 1.0) < 1e-10, "Numerical solver did not conserve probability.");
+        require(error < previous_error, "Refining the grid did not reduce error.");
+        std::cout << cells << " cells: L1 error = " << error << "\n";
+        previous_error = error;
+    }
+
+    require(previous_error < 0.015, "Fine-grid error is larger than expected.");
+}
+
 int main() {
     try {
         test_initial_density();
         test_long_term_density();
         test_total_probability();
         test_invalid_parameters();
+        test_numerical_initial_condition();
+        test_numerical_convergence();
 
-        std::cout << "All analytical tests passed.\n";
+        std::cout << "All analytical and numerical tests passed.\n";
 
         return 0;
     } catch (const std::exception& error) {
