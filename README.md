@@ -31,8 +31,8 @@ Accuracy evaluation and CPU/MPS benchmarks
 - [x] Standardize inputs using training-set statistics only.
 - [x] Train the neural surrogate on CPU.
 - [x] Save the checkpoint with the lowest validation error.
-- [ ] Evaluate the selected model on the untouched test set.
-- [ ] Compare model predictions against the analytical reference.
+- [x] Evaluate the selected model on the untouched test set.
+- [x] Compare model predictions against the analytical reference.
 - [ ] Benchmark inference against numerical and analytical methods.
 - [ ] Compare CPU and Apple MPS performance where available.
 
@@ -107,6 +107,43 @@ The checkpoint is saved to `artifacts/cpu/model.pt`, with training history and s
 
 **Validation L1 measures agreement with the numerical solver, not the analytical solution. It is a distribution distance, not an accuracy percentage. Test-set results and inference speedups have not yet been established.**
 
+### Held-out test evaluation
+
+The selected checkpoint from **epoch 297** was evaluated on **450 test examples** that were excluded from training and checkpoint selection.
+
+| Comparison | Mean L1 | Median L1 | 95th-percentile L1 | Maximum L1 |
+|---|---:|---:|---:|---:|
+| Model vs numerical solver | 0.008956 | 0.007544 | 0.019172 | 0.045389 |
+| Numerical solver vs analytical reference | 0.030808 | 0.029030 | 0.056792 | 0.071535 |
+| Model vs analytical reference | 0.031935 | 0.029986 | 0.057671 | 0.098562 |
+
+The model’s mean test L1 against the solver was close to its best validation L1 of **0.009197**, supporting generalization to unseen combinations within the sampled parameter ranges.
+
+The model closely approximates its numerical teacher, but inherits numerical-label limitations. Its mean error against the analytical reference is slightly higher than the solver’s, and its worst-case error is larger. These pairwise errors are not additive.
+
+Additional checks:
+
+| Metric | Result |
+|---|---:|
+| Model mean absolute mean error vs analytical reference | 0.006074 |
+| Model mean absolute tail-probability error vs analytical reference | 0.001982 |
+| Maximum model probability-mass error | 4.639e-07 |
+
+Tail probability is approximated using cells whose centers satisfy `x > 1`. The reported error is absolute; it does not establish relative accuracy for extremely rare events.
+
+Evaluation runs on CPU without updating model weights:
+
+```bash
+python python/evaluate.py
+```
+
+The script verifies the dataset fingerprint and test split, then saves:
+
+- `results/evaluation_cpu/metrics.json`
+- `results/evaluation_cpu/predictions.npz`
+
+These results measure accuracy only. No inference speedup has been demonstrated yet.
+
 ## Build and run
 
 Requires a C++20 compiler, CMake, and a compatible Python environment.
@@ -165,6 +202,3 @@ MPS training has not yet been evaluated in the reported results. Running these c
 - Ornstein–Uhlenbeck dynamics already have an inexpensive analytical solution. That formula will be included as a performance baseline.
 - This is a numerical computing and ML systems experiment using synthetic data, not evidence of a profitable trading strategy.
 
-## Next steps
-
-Evaluate the selected checkpoint on the held-out test set, compare predictions against both numerical and analytical references, and benchmark latency and throughput across batch sizes. Report performance alongside accuracy, precision, device, and transfer costs.
