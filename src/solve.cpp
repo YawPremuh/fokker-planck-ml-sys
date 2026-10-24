@@ -6,14 +6,9 @@
 
 namespace fluxfp {
 
-double exact_density(
-    double x,
-    double time,
-    const Config& config
-) {
+double exact_density(double x, double time,const Config& config) {
     //reject invalid inputs that would make calc invalid
-    if (
-        !std::isfinite(x) ||
+    if (!std::isfinite(x) ||
         !std::isfinite(time) ||
         !std::isfinite(config.theta) ||
         !std::isfinite(config.mean) ||
@@ -21,21 +16,11 @@ double exact_density(
         !std::isfinite(config.initial_mean) ||
         !std::isfinite(config.initial_std)
     ) {
-        throw std::invalid_argument(
-            "All your inputs must be finite numbers."
-        );
+        throw std::invalid_argument("All your inputs must be finite numbers.");
     }
 
-    if (
-        time < 0.0 ||
-        config.theta <= 0.0 ||
-        config.sigma <= 0.0 ||
-        config.initial_std <= 0.0
-    ) {
-        throw std::invalid_argument(
-            "Time must be not be negative. "
-            "Theta, sigma, and initial_std must be positive."
-        );
+    if (time < 0.0 || config.theta <= 0.0 || config.sigma <= 0.0 || config.initial_std <= 0.0) {
+        throw std::invalid_argument("Time must be not be negative. Theta, sigma, and initial_std must be positive.");
     }
 
     //how much influence the initial condition still has
@@ -52,9 +37,7 @@ double exact_density(
 
     //evaluate the gaussian density at position x.
     const double difference = x - future_mean;
-
     const double exponent = -(difference * difference) / (2.0 * future_variance);
-
     const double denominator = std::sqrt(2.0 * std::numbers::pi * future_variance);
 
     return std::exp(exponent) / denominator;
