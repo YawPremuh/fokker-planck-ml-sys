@@ -33,6 +33,7 @@ Accuracy evaluation and CPU/MPS benchmarks
 - [x] Save the checkpoint with the lowest validation error.
 - [x] Evaluate the selected model on the untouched test set.
 - [x] Compare model predictions against the analytical reference.
+- [x] Visualize selected predictions 
 - [ ] Benchmark inference against numerical and analytical methods.
 - [ ] Compare CPU and Apple MPS performance where available.
 
@@ -142,7 +143,48 @@ The script verifies the dataset fingerprint and test split, then saves:
 - `results/evaluation_cpu/metrics.json`
 - `results/evaluation_cpu/predictions.npz`
 
-These results measure accuracy only. No inference speedup has been demonstrated yet.
+
+Prediction visualizations
+
+Examples are selected by model L1 error against the analytical reference.
+
+Selected example
+
+Model L1
+
+Solver L1
+
+Lowest model error
+
+0.005777
+
+0.013105
+
+Middle-ranked
+
+0.030002
+
+0.031197
+
+Highest model error
+
+0.098562
+
+0.071535
+
+The plots show that:
+
+The surrogate often follows the numerical solver’s error pattern.
+
+In the highest-error example, both methods underestimate a narrow analytical peak, with a larger deviation from the surrogate.
+
+Small cell-to-cell oscillations appear in the surrogate’s signed error. Probability normalization does not enforce smoothness.
+
+The model and solver error distributions overlap substantially, but the model has a longer high-error tail.
+
+The model is closer to the analytical reference on some individual examples, but the numerical solver has lower average analytical-reference error overall.
+
+These observations describe the evaluated test set; they do not establish which parameter regimes are generally hardest.
 
 ## Build and run
 
