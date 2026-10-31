@@ -61,3 +61,13 @@ target_link_libraries(
     fluxfp_dataset
     PRIVATE fluxfp_solver
 )
+
+add_executable(
+    fluxfp_benchmark
+    src/benchmark.cpp
+)
+
+target_link_libraries(
+    fluxfp_benchmark
+    PRIVATE fluxfp_solver
+)
